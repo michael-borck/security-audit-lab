@@ -1,7 +1,6 @@
 # Security Audit Lab
 
-> **Part of the [Assume-Breach series](https://michael-borck.github.io/security-labs/)** — four Docker-based
-> security labs, two companion books, and a game. This is the **govern / audit** end of the arc.
+> **Part of the [Assume-Breach series](https://michael-borck.github.io/security-labs/)** — five hands-on security labs, two companion books, and a game (this is the **govern / audit** end). Browse them all at the [series hub](https://github.com/michael-borck/security-labs).
 
 Play the **security consultant**: audit the fictional company **[Tessera](https://tessera.locoensayo.org)**
 against the **Essential Eight** by reading its policies, interviewing its staff, and gathering evidence —
