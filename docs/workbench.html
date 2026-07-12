@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit Workbench — Tessera Essential Eight</title>
+<meta name="description" content="Plan, scope, gather evidence, and report an Essential Eight audit of Tessera — substantiation over assumption.">
+<style>
+  :root{
+    --bg:#f3f5f7; --surface:#fff; --surface-2:#eef1f4; --line:#d9e0e6; --ink:#17212b; --muted:#5c6875; --faint:#8794a1;
+    --accent:#0f7a6c; --accent-2:#0b5d52; --accent-soft:#dcefec;
+    --met:#1f7a4d; --met-bg:#e3f3ea; --partial:#9a6a12; --partial-bg:#f7ecd6; --notmet:#a63232; --notmet-bg:#f6e0dd; --nottested:#71809a; --nottested-bg:#e9edf2;
+    --radius:12px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root{--bg:#0f151a;--surface:#171f27;--surface-2:#1e2830;--line:#2b3742;--ink:#e7edf2;--muted:#9aa7b4;--faint:#6d7b88;--accent:#4fc3b1;--accent-2:#7ad6c7;--accent-soft:#14312d;--met:#5fce93;--met-bg:#15291f;--partial:#e0b45f;--partial-bg:#2c2413;--notmet:#e9827a;--notmet-bg:#2e1a19;--nottested:#8a97a6;--nottested-bg:#20272e;}}
+  :root[data-theme="light"]{--bg:#f3f5f7;--surface:#fff;--surface-2:#eef1f4;--line:#d9e0e6;--ink:#17212b;--muted:#5c6875;--faint:#8794a1;--accent:#0f7a6c;--accent-2:#0b5d52;--accent-soft:#dcefec;--met:#1f7a4d;--met-bg:#e3f3ea;--partial:#9a6a12;--partial-bg:#f7ecd6;--notmet:#a63232;--notmet-bg:#f6e0dd;--nottested:#71809a;--nottested-bg:#e9edf2;}
+  :root[data-theme="dark"]{--bg:#0f151a;--surface:#171f27;--surface-2:#1e2830;--line:#2b3742;--ink:#e7edf2;--muted:#9aa7b4;--faint:#6d7b88;--accent:#4fc3b1;--accent-2:#7ad6c7;--accent-soft:#14312d;--met:#5fce93;--met-bg:#15291f;--partial:#e0b45f;--partial-bg:#2c2413;--notmet:#e9827a;--notmet-bg:#2e1a19;--nottested:#8a97a6;--nottested-bg:#20272e;}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:0 18px 90px} h1,h2,h3,h4{line-height:1.22;margin:0;text-wrap:balance} a{color:var(--accent)} p{margin:.5em 0}
+  code{font-family:var(--mono);font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:5px}
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700} .brand .dot{width:11px;height:11px;border-radius:3px;background:var(--accent)}
+  .tag{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:6px;font-weight:700}
+  .theme-btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;width:34px;height:34px;cursor:pointer}
+  .steps{display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:20px}
+  .step{border:0;background:none;color:var(--faint);font-family:inherit;font-size:13.5px;font-weight:600;padding:10px 12px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;gap:7px;align-items:center}
+  .step .num{font-family:var(--mono);font-size:11px;background:var(--surface-2);color:var(--muted);width:19px;height:19px;border-radius:99px;display:grid;place-items:center}
+  .step.active{color:var(--ink);border-bottom-color:var(--accent)} .step.active .num{background:var(--accent);color:#fff} .step.done .num{background:var(--met-bg);color:var(--met)}
+  .panel{display:none} .panel.active{display:block}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px}
+  .card h2{font-size:20px;letter-spacing:-.01em} .card h3{font-size:15px;margin:16px 0 4px} .card p{color:var(--muted);font-size:14.5px}
+  .note{margin-top:12px;padding:12px 14px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:8px;color:var(--ink);font-size:13.5px}
+  .note.warn{border-left-color:var(--partial);background:var(--partial-bg)} .note b{color:var(--accent-2)}
+  .clientbrief{border:1px dashed var(--line);border-radius:10px;padding:14px 16px;margin-top:12px;background:var(--bg);font-size:14px}
+  .clientbrief .from{font-family:var(--mono);font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
+  ul.tips{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:13.5px} ul.tips li{margin:4px 0}
+  .scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px} @media(max-width:620px){.scope-grid{grid-template-columns:1fr}}
+  .sc{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface);cursor:pointer;position:relative}
+  .sc:hover{border-color:var(--accent)} .sc.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .sc .cn{font-weight:650;font-size:14px} .sc .cs{color:var(--faint);font-size:11px;font-family:var(--mono)}
+  .sc .lim{color:var(--partial);font-size:11.5px;margin-top:5px;font-weight:600}
+  .sc .ck{position:absolute;top:12px;right:12px;width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;color:#fff}
+  .sc.sel .ck{background:var(--accent);border-color:var(--accent)}
+  textarea,select,input.txt{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:13.5px;padding:8px 10px}
+  textarea{min-height:44px;resize:vertical} textarea:focus,select:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+  label.fld{display:block;font-size:12px;font-weight:700;margin:12px 0 4px}
+  .room{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px;overflow:hidden}
+  .room-head{padding:15px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+  .room-head h2{font-size:17px} .room-head .sub{color:var(--faint);font-size:12.5px;margin-top:2px}
+  .room-body{display:none;padding:0 18px 16px;border-top:1px solid var(--line)} .room.open .room-body{display:block}
+  .room h4{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:14px 0 6px}
+  .rlist{display:flex;flex-wrap:wrap;gap:6px}
+  a.ritem{font-size:12px;border:1px solid var(--line);border-radius:7px;padding:5px 9px;background:var(--bg);color:var(--ink);text-decoration:none;font-weight:500} a.ritem:hover{border-color:var(--accent);color:var(--accent)}
+  a.ritem .ar{color:var(--faint);font-size:10px;margin-left:3px}
+  .ctrl{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+  .ctrl-head{display:flex;align-items:flex-start;gap:12px;padding:15px 18px;cursor:pointer}
+  .ctrl-head .cid{font-family:var(--mono);font-size:11px;color:var(--faint);font-weight:700} .ctrl-head h3{font-size:15.5px;margin:2px 0 0} .ctrl-head .grow{flex:1}
+  .rpill{font-size:11px;font-weight:700;font-family:var(--mono);padding:3px 9px;border-radius:99px;white-space:nowrap;background:var(--nottested-bg);color:var(--nottested)}
+  .rpill.met{background:var(--met-bg);color:var(--met)} .rpill.partial{background:var(--partial-bg);color:var(--partial)} .rpill.notmet{background:var(--notmet-bg);color:var(--notmet)}
+  .chev{color:var(--faint);transition:transform .2s;flex:none;margin-top:2px} .ctrl.open .chev{transform:rotate(90deg)}
+  .ctrl-body{display:none;padding:0 18px 18px;border-top:1px solid var(--line)} .ctrl.open .ctrl-body{display:block}
+  .statement{color:var(--muted);font-size:14px;margin:14px 0 2px;font-style:italic}
+  .limban{margin:10px 0 2px;padding:9px 12px;border-radius:8px;background:var(--partial-bg);color:var(--partial);font-size:12.5px;font-weight:600}
+  .evrow{display:flex;gap:8px;margin-top:8px;align-items:flex-start} .evrow select{flex:0 0 42%} .evrow textarea{flex:1;min-height:38px}
+  .ev-added .e{display:flex;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:7px;margin-top:6px;background:var(--bg);font-size:13px;align-items:baseline}
+  .ev-added .e .ty{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;padding:2px 6px;border-radius:5px;background:var(--surface-2);color:var(--muted);flex:none}
+  .ev-added .e .src{font-weight:600;flex:none} .ev-added .e .nt{color:var(--muted);flex:1} .ev-added .e .x{color:var(--notmet);cursor:pointer;border:0;background:none;font-size:14px}
+  .rate{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+  .rate button{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit} .rate button:hover{border-color:var(--accent)}
+  .rate button.sel[data-r="Met"]{background:var(--met-bg);color:var(--met);border-color:var(--met)} .rate button.sel[data-r="Partial"]{background:var(--partial-bg);color:var(--partial);border-color:var(--partial)}
+  .rate button.sel[data-r="Not met"]{background:var(--notmet-bg);color:var(--notmet);border-color:var(--notmet)} .rate button.sel[data-r="Not tested"]{background:var(--nottested-bg);color:var(--nottested);border-color:var(--nottested)}
+  .rowbtns{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap} .link{background:none;border:0;color:var(--accent);font-size:13px;cursor:pointer;padding:2px 0;font-weight:600;font-family:inherit}
+  .reveal{display:none;margin-top:10px;padding:12px 14px;border-radius:8px;background:var(--surface-2);font-size:13.5px} .reveal.show{display:block}
+  .reveal.hint{border-left:3px solid var(--partial)} .reveal.exemplar{border-left:3px solid var(--accent)}
+  .reveal .lab{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);font-weight:700;display:block;margin-bottom:5px} .reveal.exemplar em{color:var(--muted)}
+  .fb{display:none;margin-top:12px;border-radius:8px;overflow:hidden;border:1px solid var(--line)} .fb.show{display:block}
+  .fb .flag{display:flex;gap:8px;padding:8px 12px;font-size:13px;border-bottom:1px solid var(--line);align-items:baseline} .fb .flag:last-child{border-bottom:0} .fb .flag .i{font-weight:700;flex:none}
+  .flag.good{background:var(--met-bg)} .flag.good .i{color:var(--met)} .flag.warn{background:var(--partial-bg)} .flag.warn .i{color:var(--partial)} .flag.bad{background:var(--notmet-bg)} .flag.bad .i{color:var(--notmet)} .flag .teach{color:var(--muted)}
+  .convo{border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-top:8px;background:var(--bg)} .convo .cr{display:flex;gap:8px;margin-bottom:6px} .convo .del{color:var(--notmet);border:0;background:none;cursor:pointer;font-size:12px;font-weight:600}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:9px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff} .btn.primary:hover{background:var(--accent-2)} .btn:hover{border-color:var(--accent)} .btn:disabled{opacity:.5;cursor:not-allowed}
+  .sugg li{margin:6px 0;color:var(--muted);font-size:13.5px}
+  #report .doc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px 30px;font-size:14px}
+  #report .doc h1{font-size:23px} #report .doc h2{font-size:17px;margin:22px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)} #report .doc h3{font-size:14px;margin:14px 0 3px}
+  #report .doc .cov{color:var(--muted);font-size:13px} #report .doc .ev{color:var(--muted);font-size:13px;margin:2px 0}
+  footer{margin-top:24px;color:var(--faint);font-size:12.5px;text-align:center}
+  @media print{ body *{visibility:hidden} #report,#report *{visibility:visible} #report{position:absolute;left:0;top:0;width:100%} #report .actions{display:none} #report .doc{border:0} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <div class="brand"><span class="dot"></span> Audit Workbench <span class="tag">Tessera · Essential Eight</span></div>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Toggle theme">◐</button>
+  </div>
+  <div class="steps" id="stepper">
+    <button class="step active" data-step="brief"><span class="num">1</span>Planning</button>
+    <button class="step" data-step="scope"><span class="num">2</span>Scope</button>
+    <button class="step" data-step="field"><span class="num">3</span>Fieldwork</button>
+    <button class="step" data-step="review"><span class="num">4</span>Review</button>
+    <button class="step" data-step="report"><span class="num">5</span>Report</button>
+  </div>
+
+  <div class="panel active" id="brief">
+    <div class="card">
+      <h2>Planning meeting — the Tessera engagement</h2>
+      <p>You're an independent consultant engaged to give Tessera assurance over its <b>Essential Eight</b>
+        posture, after this year's incident. This is the kickoff. <b>Before you scope anything, go and
+        understand the business</b> — read Tessera's policy library and Statement of Applicability, and meet
+        the people. Nobody will tell you where the gaps are; an auditor works that out.</p>
+      <div class="clientbrief">
+        <div class="from">From: Isabella Ferreira, CISO — engagement brief</div>
+        <p style="color:var(--ink);margin-top:6px">"After TSR-INC-2025-031, the board wants independent
+        confirmation that our Essential Eight controls are <em>real</em>, not just written down. Our
+        Statement of Applicability says we're in good shape. I'd rather you tested that than took it from me.
+        Focus where it matters — you won't be able to cover everything, and you won't get onto our endpoints."</p>
+      </div>
+      <div class="note">🏢 <b>Go look first.</b> <a href="https://tessera.locoensayo.org" target="_blank" rel="noopener">Open Tessera</a>
+        in another tab — the <a href="https://tessera.locoensayo.org/docs/policies.html" target="_blank" rel="noopener">policies</a>,
+        the <a href="https://tessera.locoensayo.org/docs/support/statement_of_applicability.html" target="_blank" rel="noopener">Statement of Applicability</a>,
+        and the <a href="https://tessera.locoensayo.org/chatbots/" target="_blank" rel="noopener">staff you can interview</a> — and form your own view of where the risk is.</div>
+
+      <h3>What kind of audit is this?</h3>
+      <p>An <b>advisory / self-audit</b> — Tessera hired you to find and fix gaps; the motive for an honest
+        result is reputation and improvement, not a certificate. Different from <b>ISO 27001 certification</b>
+        (a formal, accredited, third-party audit with a defined scope and surveillance audits). Don't conflate them.</p>
+      <div class="note warn">📸 <b>An audit is a snapshot.</b> Your findings describe the controls at the time
+        you tested them — not a warranty they still hold next week.</div>
+
+      <h3>Interview tips — inquiry is evidence if you do it well</h3>
+      <ul class="tips">
+        <li><b>Work out who's relevant yourself</b> — Tessera has a dozen staff; most aren't relevant to a given control.</li>
+        <li><b>Ask for evidence, not assurance:</b> "show me the last restore test" beats "do you test backups?"</li>
+        <li><b>Corroborate.</b> One person's claim is a lead, not a finding — confirm it against a document or a log.</li>
+        <li><b>Follow the exceptions.</b> "For everyone?" and "since when?" surface the gap between policy and practice.</li>
+      </ul>
+      <div class="note">⚖️ <b>How you're assessed:</b> not on the verdict — there's no single right answer — but
+        on whether you <b>substantiated</b> it: relevant evidence, corroborated, defensible. A <em>Partial</em>
+        you can defend beats a <em>Met</em> you can't.</div>
+      <div class="actions"><button class="btn primary" data-go="scope">Scope the engagement →</button></div>
+    </div>
+  </div>
+
+  <div class="panel" id="scope">
+    <div class="card">
+      <h2>Scope — what will you audit, and why?</h2>
+      <p>Choose the Essential Eight controls to assess. You can't cover everything — deciding what matters
+        most for <em>this</em> company, post-incident, is your call. The endpoint controls (marked) can only
+        be partly tested: you have policies and people, but no access to Tessera's endpoints, so you can't
+        verify enforcement — you'd rate what you can and record the limitation.</p>
+      <div class="scope-grid" id="scopeGrid"></div>
+      <label class="fld">Scoping rationale — why these controls, for this client, now?</label>
+      <textarea id="rationale" placeholder="e.g. Post key-leak incident, identity and privileged access are the highest risk, so I'm prioritising MFA and admin restriction; backups because the SoA self-attests restore testing; patching because of the known legacy footprint…"></textarea>
+      <div class="note" id="scopeNudge" style="display:none"></div>
+      <div class="actions" style="margin-top:14px"><button class="btn primary" id="beginField" disabled>Begin fieldwork →</button></div>
+    </div>
+  </div>
+
+  <div class="panel" id="field">
+    <div class="room" id="roomCard">
+      <div class="room-head"><div><h2>🗄️ Evidence room — everything available to you</h2><div class="sub">These link into Tessera. The tool won't tell you which bear on a control — working that out is the audit.</div></div>
+        <svg class="chev" width="14" height="14" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="room-body" id="roomBody"></div>
+    </div>
+    <div class="card" id="fieldEmpty"><h2>Fieldwork</h2><p>No controls scoped — go back to <b>Scope</b>.</p></div>
+    <div id="fieldControls"></div>
+    <div class="card" id="recordsCard" style="display:none">
+      <h2>Records of conversation</h2>
+      <p>Log each interview with a Tessera staff member — these become report appendices and back up any control you rated on inquiry.</p>
+      <div id="convoList"></div>
+      <div class="actions" style="margin-top:10px"><button class="btn" id="addConvo">+ Add a conversation</button></div>
+      <label class="fld" style="margin-top:18px">General notes</label>
+      <textarea id="notes" placeholder="Working notes, things to follow up…" style="min-height:70px"></textarea>
+    </div>
+    <div class="actions" id="toReview" style="display:none"><button class="btn primary" data-go="review">Review my audit →</button></div>
+  </div>
+
+  <div class="panel" id="review"><div id="reviewBody" class="card"><h2>Review</h2><p>Scope and do some fieldwork first.</p></div></div>
+
+  <div class="panel" id="report">
+    <div class="actions" style="margin-bottom:14px">
+      <button class="btn primary" id="genReport">Generate / refresh report</button>
+      <button class="btn" id="printReport">Print / PDF</button>
+      <button class="btn" id="dlMd">Download (.md)</button>
+      <button class="btn" id="resetAll" style="margin-left:auto">Reset all</button>
+    </div>
+    <div class="doc" id="reportDoc"><p style="color:var(--muted)">Generate the report to assemble findings, evidence, recommendations and appendices.</p></div>
+  </div>
+  <footer>Part of <a href="index.html">security-audit-lab</a> · audits <a href="https://tessera.locoensayo.org" target="_blank" rel="noopener">Tessera</a> · companion to <em>Substantiate, Don't Assume</em>. Ratings/exemplars are illustrative.</footer>
+</div>
+
+<script>
+const T="https://tessera.locoensayo.org";
+const ROOM={
+  policies:[
+    {id:"access",label:"Access Control Policy",url:"/docs/policies/access.html"},
+    {id:"bcdr",label:"Business Continuity & DR Policy",url:"/docs/policies/bcdr.html"},
+    {id:"vuln_mgmt",label:"Patch & Vulnerability Management Policy",url:"/docs/policies/vuln_mgmt.html"},
+    {id:"macro_std",label:"Office Macro Configuration Standard",url:"/docs/policies/office_macro_std.html"},
+    {id:"harden_std",label:"User Application Hardening Standard",url:"/docs/policies/app_hardening_std.html"},
+    {id:"approved_software",label:"Approved Software List",url:"/docs/policies/approved_software.html"},
+    {id:"acceptable_use",label:"Acceptable Use Policy",url:"/docs/policies/acceptable_use.html"},
+    {id:"asset_mgmt",label:"Asset Management Policy",url:"/docs/policies/asset_mgmt.html"},
+    {id:"hr",label:"Personnel Security Policy",url:"/docs/policies/hr.html"},
+    {id:"privacy",label:"Privacy Policy",url:"/docs/policies/privacy_policy.html"}],
+  people:[
+    {id:"isabella",label:"Isabella Ferreira — CISO",url:"/chatbots/bots/isabella_ferreira/"},
+    {id:"hamish",label:"Hamish Boyd — Head of IT",url:"/chatbots/bots/hamish_boyd/"},
+    {id:"theo",label:"Theo Nowak — SOE / Endpoint Admin",url:"/chatbots/bots/theo_nowak/"},
+    {id:"rafa",label:"Rafa Costa — Cloud Ops Mgr",url:"/chatbots/bots/rafa_costa/"},
+    {id:"grace",label:"Grace Sullivan — COO",url:"/chatbots/bots/grace_sullivan/"},
+    {id:"anika",label:"Anika Desai — Head of People",url:"/chatbots/bots/anika_desai/"},
+    {id:"adrian",label:"Adrian Vasquez — CIO",url:"/chatbots/bots/adrian_vasquez/"},
+    {id:"connor",label:"Connor Hayes — Cloud Architect",url:"/chatbots/bots/connor_hayes/"},
+    {id:"priya",label:"Priya Nair — CFO",url:"/chatbots/bots/priya_nair/"},
+    {id:"margaux",label:"Margaux Dubois — Head of Compliance",url:"/chatbots/bots/margaux_dubois/"},
+    {id:"noah",label:"Noah Bennett — Head of Engineering",url:"/chatbots/bots/noah_bennett/"},
+    {id:"sana",label:"Dr Sana Qureshi — CTO",url:"/chatbots/bots/dr_sana_qureshi/"}],
+  evidence:[
+    {id:"soa",label:"Statement of Applicability",url:"/docs/support/statement_of_applicability.html"},
+    {id:"posture",label:"Security posture summary",url:"/docs/support/security_posture.html"},
+    {id:"iam_rev",label:"IAM revocation log",url:"/docs/support/logs/iam_revocation_log.html"},
+    {id:"sso_log",label:"SSO session log",url:"/docs/support/logs/sso_session_log.html"},
+    {id:"cloudtrail",label:"CloudTrail export",url:"/docs/support/logs/cloudtrail_export.html"},
+    {id:"edr",label:"EDR logs",url:"/docs/support/logs/edr_logs.html"},
+    {id:"firewall",label:"Firewall logs",url:"/docs/support/logs/firewall_logs.html"},
+    {id:"db_log",label:"Database access logs",url:"/docs/support/logs/database_access_logs.html"},
+    {id:"leavers",label:"HR leavers dataset (CSV)",url:"/data/tessera-hr-leavers.csv"},
+    {id:"risk_reg",label:"Risk register",url:"/docs/support/risk_register.html"},
+    {id:"incident",label:"Incident report TSR-INC-2025-031",url:"/docs/support/incident_report.html"}]
+};
+const SRC={};["policies","people","evidence"].forEach(cat=>ROOM[cat].forEach(s=>SRC[s.id]={...s,cat}));
+const TYPE={policies:"inspect",people:"inquire",evidence:"observe"};
+const LIMIT="Endpoint control — you can inspect the standard and interview the SOE team, but you can't verify enforcement without endpoint access. Rate what you can, and record the limitation.";
+const CONTROLS=[
+  {id:"App control",short:"E8-1",name:"Application control",limited:true,
+   statement:"Only approved applications are allowed to execute; execution of unapproved software is prevented.",
+   relevant:["approved_software","theo","hamish","asset_mgmt"],key:["approved_software"],
+   hint:"Is there a control here, or just a list? A list of approved software is an inventory, not enforcement — and what would prove enforcement?",
+   exemplar:{rating:"Not met",body:"The only artefact is an <b>Approved Software List</b> (inspection) — an inventory, not enforced allow-listing. The SOE administrator confirms there is no execution-prevention technology enforcing it (inquiry). Enforcement can't be observed without endpoint access (<em>limitation</em>). <b>Not met / not implemented</b> as an Essential Eight control. Recommend deploying application control (allow-listing) with a compliance report."},
+   teach:"An approved-software <em>list</em> is not application <em>control</em>. Naming the artefact for what it is, is the finding."},
+  {id:"Patch apps",short:"E8-2",name:"Patch applications",
+   statement:"Applications are patched within 14 days (48h if actively exploited).",
+   relevant:["vuln_mgmt","hamish","theo","edr","posture","soa"],key:["vuln_mgmt","hamish"],
+   hint:"There is a patch policy now — read it closely. It quotes a compliance figure; what would you need to trust that number?",
+   exemplar:{rating:"Partial",body:"The Patch & Vulnerability Management Policy (POL-ITMA-031) sets a 14-day SLA (inspection) but its own reviewer note admits the <b>compliance denominator is undefined</b> — BYO and Malaga legacy machines may be excluded. The Head of IT concedes the same; the SOE admin says Malaga patching is manual and he's 'not confident it's in SLA' (inquiry). No retained scan evidence corroborates the figure (observation gap). <b>Partial</b> — a policy exists but the reported figure isn't substantiated. Recommend defining the denominator and retaining scan evidence."},
+   teach:"A compliance percentage with an undefined denominator is a number, not evidence."},
+  {id:"Macros",short:"E8-3",name:"Configure MS Office macro settings",limited:true,
+   statement:"Office macros are disabled except signed macros from trusted locations; internet macros blocked.",
+   relevant:["macro_std","theo"],key:["macro_std","theo"],
+   hint:"There's a standard for this — but what does the person who actually configures the fleet say happens in practice?",
+   exemplar:{rating:"Not met",body:"The Office Macro Configuration Standard (SEC-STD-011) requires signed-only macros, but its own carve-out permits <b>Finance's legacy templates to run unsigned macros from a shared location</b> (inspection). The SOE administrator confirms the carve-out is live and that GPO enforcement across the fleet isn't evidenced (inquiry, corroborating). Enforcement unverifiable without endpoint access (<em>limitation</em>). <b>Not met</b> — a material carve-out defeats the control. Recommend removing the carve-out or signing the templates, and evidencing enforcement."},
+   teach:"Policy and interview corroborate each other here — the same carve-out surfaces from the document and the person. That's substantiation."},
+  {id:"App hardening",short:"E8-4",name:"User application hardening",limited:true,
+   statement:"Web browsers and applications are hardened (Flash/Java/ads blocked, unneeded features off).",
+   relevant:["harden_std","theo"],key:["harden_std","theo"],
+   hint:"A documented baseline is a claim about every laptop. Who would know whether it's actually enforced — and drifts?",
+   exemplar:{rating:"Partial",body:"The User Application Hardening Standard (SEC-STD-012) defines a baseline but is <b>documented, not evidenced as enforced</b> (inspection); the SOE admin says he's 'never seen it enforced by GPO across the whole fleet', laptops drift, and extensions get installed (inquiry). Enforcement unverifiable without endpoint access (<em>limitation</em>). <b>Partial</b> — designed, not demonstrably operating. Recommend a configuration-compliance report."},
+   teach:"A baseline nobody measures is an aspiration. 'Documented' and 'enforced' are different findings."},
+  {id:"Admin",short:"E8-5",name:"Restrict administrative privileges",
+   statement:"Admin privileges are least-privilege, unique, and revoked promptly when no longer needed.",
+   relevant:["access","hamish","connor","iam_rev","asset_mgmt","leavers","anika"],key:["access","iam_rev"],
+   hint:"The policy is a claim about how access works. Which log or dataset would show whether it's actually least-privilege and revoked?",
+   exemplar:{rating:"Not met",body:"The Access Control Policy requires JIT elevation and no standing admin (inspection). But the asset register flags <b>orphaned IAM service accounts</b> and the IAM revocation log / leavers data show access lingering beyond policy (observation), which IT corroborates (inquiry). <b>Not met</b> on operating effectiveness. Recommend removing standing access, cleaning service accounts, and enforcing revocation SLAs. <em>(Note: the joiner-mover-leaver timeliness issue corroborates here — but it's a governance finding in its own right.)</em>"},
+   teach:"A policy that says the right thing can still fail in operation — the logs, not the policy, tell you."},
+  {id:"Patch OS",short:"E8-6",name:"Patch operating systems",
+   statement:"Operating systems are patched within 14 days; unsupported OSes removed.",
+   relevant:["vuln_mgmt","hamish","theo","posture","soa"],key:["vuln_mgmt","hamish"],
+   hint:"Same policy and owner as application patching. Does managed patching cover the legacy footprint, and is it evidenced?",
+   exemplar:{rating:"Partial",body:"POL-ITMA-031 covers OS patching (inspection) and the posture summary supports currency for core AWS hosts (observation), but the <b>Malaga legacy footprint</b> is acknowledged as harder to patch, with a decommission plan requested-but-not-approved and no evidence of currency (inquiry). <b>Partial</b> — strong for the managed estate, unproven for the legacy tail. Recommend evidencing coverage across all hosts."},
+   teach:"Coverage matters: 'mostly patched' with an unmeasured tail is not the same as 'patched'."},
+  {id:"MFA",short:"E8-7",name:"Multi-factor authentication",
+   statement:"MFA is enforced for all users on internet-facing and privileged systems.",
+   relevant:["access","isabella","sso_log","posture","soa"],key:["access","isabella"],
+   hint:"“Rollout complete, no exemptions” is a strong claim. Who would know the truth — including for legacy systems and service accounts?",
+   exemplar:{rating:"Partial",body:"The Access Control Policy states MFA is fully rolled out with no exemptions (inspection). Pressed on legacy, the CISO concedes older tenants and some service accounts aren't covered, and SMS (NIST-deprecated) remains an approved method (inquiry). The SSO log doesn't evidence universal coverage (observation gap). <b>Partial</b> — enforced broadly, not universally. Recommend closing legacy/service-account gaps and retiring SMS."},
+   teach:"'No exemptions' rarely survives the question 'for everyone, including legacy and service accounts?'"},
+  {id:"Backups",short:"E8-8",name:"Regular backups (and tested restoration)",
+   statement:"Backups of important data are performed and restoration is tested regularly.",
+   relevant:["bcdr","rafa","grace","posture","soa"],key:["bcdr","rafa"],
+   hint:"Backups running is not backups working. Which document claims restoration is tested — and who could show you it actually was?",
+   exemplar:{rating:"Not met",body:"The SoA (A.8.13) self-attests 'restore tested quarterly' and the BCDR policy describes snapshots/cross-region (inspection). But Ops confirms cross-region failover is 'not yet provisioned — benchmarks, not tested outcomes' and could produce no restore record (inquiry + posture summary). <b>Not met</b> on operating effectiveness — an untested restore is unproven. Recommend a documented restore test and provisioning the declared standby region."},
+   teach:"Design vs operating effectiveness — the SoA <em>claims</em> it; your job is to see whether it's true."},
+];
+const RATINGS=["Met","Partial","Not met","Not tested"];
+const KEY="security-audit-lab-tessera-v1";
+let state={};try{state=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){state={}}
+state.scope=state.scope||[];state.controls=state.controls||{};state.convos=state.convos||[];state.notes=state.notes||"";state.rationale=state.rationale||"";
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function st(id){return state.controls[id]||(state.controls[id]={evidence:[],rating:"",just:""})}
+const rclass=r=>r==="Met"?"met":r==="Partial"?"partial":r==="Not met"?"notmet":"";
+const esc=s=>(s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const scoped=()=>CONTROLS.filter(c=>state.scope.includes(c.id));
+function goto(step){document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("active",p.id===step));
+  document.querySelectorAll(".step").forEach(s=>s.classList.toggle("active",s.dataset.step===step));
+  if(step==="field")renderField();if(step==="review")renderReview();window.scrollTo({top:0,behavior:"smooth"});markDone();}
+function markDone(){const d={brief:true,scope:state.scope.length>0,field:scoped().some(c=>st(c.id).rating)};
+  document.querySelectorAll(".step").forEach(s=>s.classList.toggle("done",!!d[s.dataset.step]&&!s.classList.contains("active")));}
+document.querySelectorAll(".step").forEach(s=>s.addEventListener("click",()=>goto(s.dataset.step)));
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>goto(b.dataset.go)));
+const grid=document.getElementById("scopeGrid");
+CONTROLS.forEach(c=>{const el=document.createElement("div");el.className="sc"+(state.scope.includes(c.id)?" sel":"");
+  el.innerHTML=`<div class="ck">${state.scope.includes(c.id)?"✓":""}</div><div class="cs">${c.short}</div><div class="cn">${c.name}</div>${c.limited?`<div class="lim">⚠ endpoint control — enforcement not directly verifiable</div>`:""}`;
+  el.addEventListener("click",()=>{const i=state.scope.indexOf(c.id);if(i>=0)state.scope.splice(i,1);else state.scope.push(c.id);
+    el.classList.toggle("sel");el.querySelector(".ck").textContent=state.scope.includes(c.id)?"✓":"";save();scopeNudge();markDone();});
+  grid.appendChild(el);});
+const rat=document.getElementById("rationale");rat.value=state.rationale;rat.addEventListener("input",e=>{state.rationale=e.target.value;save()});
+function scopeNudge(){const n=document.getElementById("scopeNudge"),b=document.getElementById("beginField");const k=state.scope.length;b.disabled=k===0;
+  if(!k){n.style.display="none";return;}n.style.display="block";
+  n.innerHTML=k<=3?`<b>${k}</b> scoped. Allowed — but a narrow audit gives a narrower opinion. Broader coverage across the eight makes your conclusion more defensible.`:`<b>${k}</b> of 8 scoped — good coverage.`;}
+scopeNudge();
+document.getElementById("beginField").addEventListener("click",()=>goto("field"));
+document.getElementById("roomCard").querySelector(".room-head").addEventListener("click",()=>document.getElementById("roomCard").classList.toggle("open"));
+document.getElementById("roomBody").innerHTML=[["policies","📄 Policies & standards"],["people","👥 People you can interview"],["evidence","🧾 Registers, logs & evidence"]].map(([cat,h])=>`<h4>${h}</h4><div class="rlist">${ROOM[cat].map(s=>`<a class="ritem" href="${T}${s.url}" target="_blank" rel="noopener">${esc(s.label)}<span class="ar">↗</span></a>`).join("")}</div>`).join("")+`<p style="color:var(--faint);font-size:12px;margin-top:12px">Each opens in Tessera — a policy shows the document, a person opens their chat. Some matter for a given control; many don't.</p>`;
+function optionsHTML(){return ["policies","people","evidence"].map(cat=>`<optgroup label="${cat[0].toUpperCase()+cat.slice(1)}">${ROOM[cat].map(s=>`<option value="${s.id}">${esc(s.label)}</option>`).join("")}</optgroup>`).join("")}
+function renderField(){const empty=document.getElementById("fieldEmpty"),host=document.getElementById("fieldControls"),recs=document.getElementById("recordsCard"),toRev=document.getElementById("toReview");
+  host.innerHTML="";const list=scoped();empty.style.display=list.length?"none":"block";recs.style.display=list.length?"block":"none";toRev.style.display=list.length?"flex":"none";
+  list.forEach((c,idx)=>{const s=st(c.id);const el=document.createElement("div");el.className="ctrl"+(idx===0?" open":"");
+    el.innerHTML=`<div class="ctrl-head"><svg class="chev" width="14" height="14" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="grow"><span class="cid">${c.short}</span><h3>${c.name}</h3></div><span class="rpill ${rclass(s.rating)}" data-pill>${s.rating||"Not rated"}</span></div>
+      <div class="ctrl-body"><p class="statement">“${c.statement}”</p>${c.limited?`<div class="limban">⚠ ${LIMIT}</div>`:""}
+        <label class="fld">Evidence you gathered — choose sources from the evidence room and record what you found.</label>
+        <div class="ev-added" data-added></div>
+        <div class="evrow"><select data-src>${optionsHTML()}</select><textarea data-note placeholder="What did this source tell you?"></textarea><button class="btn" data-add style="padding:8px 12px">Add</button></div>
+        <div class="rate">${RATINGS.map(r=>`<button type="button" data-r="${r}" class="${s.rating===r?"sel":""}">${r}</button>`).join("")}</div>
+        <label class="fld">Justification — could you defend this rating to the client?</label>
+        <textarea data-just placeholder="Why this rating, on what evidence?">${esc(s.just)}</textarea>
+        <div class="rowbtns"><button class="link" data-hint>💡 Stuck? (a nudge, not the answer)</button><button class="link" data-ex>See a defensible write-up</button></div>
+        <div class="reveal hint"><span class="lab">Nudge</span>${c.hint}</div>
+        <div class="reveal exemplar"><span class="lab">One defensible answer · rated “${c.exemplar.rating}”</span>${c.exemplar.body}<br><em>Yours may differ and still be sound — what matters is the evidence.</em></div>
+        <div class="fb" data-fb></div></div>`;
+    host.appendChild(el);const added=el.querySelector("[data-added]");
+    function renderAdded(){added.innerHTML=s.evidence.map((e,i)=>`<div class="e"><span class="ty">${TYPE[SRC[e.src].cat]}</span><span class="src">${esc(SRC[e.src].label)}</span><span class="nt">${esc(e.note)||"—"}</span><button class="x" data-i="${i}">✕</button></div>`).join("");
+      added.querySelectorAll(".x").forEach(x=>x.addEventListener("click",()=>{s.evidence.splice(+x.dataset.i,1);save();renderAdded()}));}
+    renderAdded();
+    el.querySelector("[data-add]").addEventListener("click",()=>{const src=el.querySelector("[data-src]").value,note=el.querySelector("[data-note]").value;s.evidence.push({src,note});save();el.querySelector("[data-note]").value="";renderAdded();});
+    el.querySelector(".ctrl-head").addEventListener("click",e=>{if(e.target.closest("textarea,button,select,.rate"))return;el.classList.toggle("open")});
+    el.querySelector("[data-just]").addEventListener("input",e=>{s.just=e.target.value;save()});
+    el.querySelectorAll(".rate button").forEach(b=>b.addEventListener("click",()=>{s.rating=s.rating===b.dataset.r?"":b.dataset.r;save();
+      el.querySelectorAll(".rate button").forEach(x=>x.classList.toggle("sel",x.dataset.r===s.rating));
+      const p=el.querySelector("[data-pill]");p.textContent=s.rating||"Not rated";p.className="rpill "+rclass(s.rating);markDone();}));
+    el.querySelector("[data-hint]").addEventListener("click",()=>el.querySelector(".reveal.hint").classList.toggle("show"));
+    el.querySelector("[data-ex]").addEventListener("click",()=>el.querySelector(".reveal.exemplar").classList.toggle("show"));});
+  renderConvos();document.getElementById("notes").value=state.notes;}
+document.getElementById("notes").addEventListener("input",e=>{state.notes=e.target.value;save()});
+function renderConvos(){const host=document.getElementById("convoList");host.innerHTML="";
+  state.convos.forEach((cv,i)=>{const el=document.createElement("div");el.className="convo";
+    el.innerHTML=`<div class="cr"><input class="txt" data-f="who" placeholder="Name" value="${esc(cv.who)}"><input class="txt" data-f="role" placeholder="Role" value="${esc(cv.role)}"></div>
+      <textarea data-f="summary" placeholder="Key points — what they said, and what evidence they could (or couldn't) show.">${esc(cv.summary)}</textarea><div style="text-align:right"><button class="del">Remove</button></div>`;
+    el.querySelectorAll("[data-f]").forEach(inp=>inp.addEventListener("input",()=>{cv[inp.dataset.f]=inp.value;save()}));
+    el.querySelector(".del").addEventListener("click",()=>{state.convos.splice(i,1);save();renderConvos()});host.appendChild(el);});}
+document.getElementById("addConvo").addEventListener("click",()=>{state.convos.push({who:"",role:"",summary:""});save();renderConvos()});
+function renderReview(){const host=document.getElementById("reviewBody");const list=scoped();
+  if(!list.length){host.innerHTML="<h2>Review</h2><p>Scope and do fieldwork first.</p>";return;}
+  let substantiated=0,assumptions=0;
+  list.forEach((c,i)=>{const s=st(c.id),el=document.getElementById("fieldControls").children[i];
+    const ev=s.evidence||[],rel=ev.filter(e=>c.relevant.includes(e.src)),types=new Set(rel.map(e=>TYPE[SRC[e.src].cat]));
+    const keyHit=c.key.some(k=>ev.some(e=>e.src===k)),distractOnly=ev.length>0&&rel.length===0,manyDistract=ev.length-rel.length>=2;
+    const flags=[];
+    if(!s.rating)flags.push(["warn","○","Not yet rated."]);
+    else{if(ev.length===0){flags.push(["bad","✕","Rated with no evidence — that's an assumption, the one thing an audit can't do."]);assumptions++;}
+      else if(distractOnly)flags.push(["bad","✕","You gathered evidence, but none of it bears on this control. Re-examine what actually tests it."]);
+      else if(types.size>=2)flags.push(["good","✓","Corroborated across "+types.size+" evidence types that matter — that's substantiation."]);
+      else flags.push(["warn","!","Relevant, but single-type — a policy is a claim; corroborate it with a person or a log."]);
+      if(rel.length&&!keyHit)flags.push(["warn","◎","You're missing an obvious source for this control — who or what haven't you consulted?"]);
+      if(manyDistract)flags.push(["","·","<span class='teach'>You also consulted "+(ev.length-rel.length)+" source(s) that don't bear on this control — scoping evidence is part of the skill, no penalty.</span>"]);
+      if(!(s.just||"").trim())flags.push(["warn","!","No justification written — a rating you can't articulate isn't defensible."]);
+      if(rel.length&&types.size>=2&&(s.just||"").trim())substantiated++;}
+    flags.push(["","→","<span class='teach'>"+c.teach+"</span>"]);
+    if(el){const fb=el.querySelector("[data-fb]");fb.innerHTML=flags.map(f=>`<div class="flag ${f[0]}"><span class="i">${f[1]}</span><span>${f[2]}</span></div>`).join("");fb.classList.add("show");el.querySelector(".reveal.exemplar").classList.add("show");}});
+  const sug=[];
+  if(!(state.rationale||"").trim())sug.push("You didn't record a scoping rationale — an audit opinion starts with why you looked where you looked.");
+  if(state.scope.length<4)sug.push(`Coverage: you scoped ${state.scope.length} of 8 controls — broader coverage gives a more defensible opinion.`);
+  if(list.some(c=>st(c.id).evidence.some(e=>SRC[e.src].cat==="people"))&&state.convos.length===0)sug.push("You used interview evidence but logged no records of conversation — add them so findings are traceable (they become appendices).");
+  if(assumptions)sug.push(`${assumptions} control(s) rated with no evidence — fix these first.`);
+  if(!sug.length)sug.push("Solid — scoped with a rationale, corroborated evidence, defensible ratings. Build the report.");
+  host.innerHTML=`<h2>Review — substantiation, not correctness</h2>
+    <p style="color:var(--muted)">You backed <b style="color:var(--ink)">${substantiated} of ${list.length}</b> scoped ratings with relevant, corroborated, justified evidence.${assumptions?` <b style="color:var(--notmet)">${assumptions}</b> rated on no evidence.`:""}</p>
+    <div class="note">Two auditors can defensibly disagree on a verdict. What makes a finding <em>hold up</em> is the evidence trail and a rationale you'd stand behind. Reopen any control in Fieldwork for per-control feedback and a defensible example.</div>
+    <h3>Suggestions to improve your audit</h3><ul class="sugg">${sug.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="actions" style="margin-top:14px"><button class="btn primary" data-go="report">Build the report →</button></div>`;
+  host.querySelector("[data-go]").addEventListener("click",()=>goto("report"));}
+function evLine(e){return `<p class="ev"><b>${TYPE[SRC[e.src].cat][0].toUpperCase()+TYPE[SRC[e.src].cat].slice(1)} — ${esc(SRC[e.src].label)}:</b> ${esc(e.note)||"—"}</p>`;}
+function buildReport(){const list=scoped();const rated=list.filter(c=>st(c.id).rating&&st(c.id).rating!=="Not tested");
+  const counts={Met:0,Partial:0,"Not met":0};rated.forEach(c=>{const r=st(c.id).rating;if(counts[r]!=null)counts[r]++});
+  const findings=list.map((c,n)=>{const s=st(c.id);return `<h3>${n+1}. ${c.name} — <span style="color:var(--${rclass(s.rating)||'nottested'})">${s.rating||"Not rated"}</span></h3>${(s.evidence.length?s.evidence.map(evLine).join(""):'<p class="ev" style="color:var(--partial)">No evidence recorded.</p>')}${(s.just||"").trim()?`<p><b>Assessment:</b> ${esc(s.just)}</p>`:""}`;}).join("");
+  const convos=state.convos.filter(c=>c.who||c.summary);
+  document.getElementById("reportDoc").innerHTML=`<h1>Security Control Audit — Tessera</h1>
+    <p class="cov">Advisory (self-)audit against the ACSC Essential Eight · point-in-time snapshot · prepared by the engaged consultant.</p>
+    <h2>1. Scope &amp; limitations</h2><p>Controls assessed: ${list.map(c=>c.name).join(", ")||"none"}.</p>
+    ${(state.rationale||"").trim()?`<p class="cov"><b>Scoping rationale:</b> ${esc(state.rationale)}</p>`:""}
+    <p class="cov"><b>Nature:</b> advisory self-audit for improvement, <em>not</em> ISO 27001 certification. <b>Snapshot:</b> findings reflect the controls at the time of testing. <b>Access limitation:</b> endpoint controls (application control, macros, user-application hardening) were assessed by document and interview only; enforcement could not be independently verified.</p>
+    <h2>2. Executive summary</h2><p>Of ${rated.length} control(s) assessed: <b style="color:var(--met)">${counts.Met} Met</b>, <b style="color:var(--partial)">${counts.Partial} Partial</b>, <b style="color:var(--notmet)">${counts["Not met"]} Not met</b>.</p>
+    <h2>3. Findings &amp; evidence</h2>${findings||"<p>No controls assessed.</p>"}
+    <h2>4. Appendix A — Records of conversation</h2>${convos.length?convos.map((c,i)=>`<h3>A${i+1}. ${esc(c.who)||"(unnamed)"}${c.role?" — "+esc(c.role):""}</h3><p class="ev">${esc(c.summary)||"—"}</p>`).join(""):'<p class="ev">No conversations recorded.</p>'}
+    ${(state.notes||"").trim()?`<h2>5. Appendix B — Working notes</h2><p class="ev">${esc(state.notes)}</p>`:""}`;}
+function reportMd(){const list=scoped();let m=`# Security Control Audit — Tessera\n\n_Advisory self-audit against the Essential Eight · snapshot._\n\n## Scope & limitations\nControls assessed: ${list.map(c=>c.name).join(", ")||"none"}.\n`;
+  if((state.rationale||"").trim())m+=`\nScoping rationale: ${state.rationale}\n`;
+  m+=`Advisory self-audit, not ISO 27001 certification. Endpoint controls assessed by document + interview only (enforcement not independently verified).\n\n## Findings\n`;
+  list.forEach((c,n)=>{const s=st(c.id);m+=`\n### ${n+1}. ${c.name} — ${s.rating||"Not rated"}\n`;s.evidence.forEach(e=>m+=`- ${TYPE[SRC[e.src].cat]} — ${SRC[e.src].label}: ${e.note||"—"}\n`);if((s.just||"").trim())m+=`\n**Assessment:** ${s.just}\n`;});
+  m+=`\n## Appendix A — Records of conversation\n`;state.convos.filter(c=>c.who||c.summary).forEach((c,i)=>m+=`\n**A${i+1}. ${c.who||"(unnamed)"}${c.role?" — "+c.role:""}**\n${c.summary||"—"}\n`);
+  if((state.notes||"").trim())m+=`\n## Appendix B — Working notes\n${state.notes}\n`;return m;}
+document.getElementById("genReport").addEventListener("click",buildReport);
+document.getElementById("printReport").addEventListener("click",()=>{buildReport();window.print()});
+document.getElementById("dlMd").addEventListener("click",()=>{const b=new Blob([reportMd()],{type:"text/markdown"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="tessera-audit-report.md";a.click();});
+document.getElementById("resetAll").addEventListener("click",()=>{if(confirm("Clear everything?")){localStorage.removeItem(KEY);location.reload();}});
+(function(){var r=document.documentElement,b=document.getElementById("themeBtn");function cur(){return r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");}
+ b.addEventListener("click",function(){r.setAttribute("data-theme",cur()==="dark"?"light":"dark");});})();
+markDone();
+</script>
+</body>
+</html>
