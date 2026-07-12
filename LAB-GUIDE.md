@@ -4,6 +4,10 @@
 > govern/assure end of the arc. Companion to the book
 > **[*Substantiate, Don't Assume*](https://michael-borck.github.io/substantiate-dont-assume/)**.
 
+> **Using an AI assistant?** Make it a thinking partner, not an autopilot — verify what it tells you the
+> way you'd verify what an auditee tells you. The series guide
+> **[Learning with AI](https://github.com/michael-borck/security-labs/blob/main/LEARNING-WITH-AI.md)** shows how.
+
 You are an independent security consultant. **Tessera** — a fictional Australian cloud-services company,
 recovering from a data breach — has engaged you to give its board independent assurance that its
 **Essential Eight** controls are *real*, not just written down. Your job is to find out, and to
