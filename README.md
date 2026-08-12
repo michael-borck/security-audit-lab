@@ -1,14 +1,14 @@
 # Security Audit Lab
 
-> **Part of the [Assume-Breach series](https://michael-borck.github.io/security-labs/)** — five hands-on security labs, two companion books, and a game (this is the **govern / audit** end). Browse them all at the [series hub](https://github.com/michael-borck/security-labs).
+> **Part of the [Assume-Breach series](https://security.borck.education/)** — five hands-on security labs, two companion books, and a game (this is the **govern / audit** end). Browse them all at the [series hub](https://github.com/michael-borck/security-labs).
 
 Play the **security consultant**: audit the fictional company **[Tessera](https://tessera.locoensayo.org)**
 against the **Essential Eight** by reading its policies, interviewing its staff, and gathering evidence —
 then rate each control and **substantiate every finding**. There's no single right answer; you're judged on
 whether your evidence holds up.
 
-**→ [Start the lab](https://michael-borck.github.io/security-audit-lab/)** ·
-**[Open the Audit Workbench](https://michael-borck.github.io/security-audit-lab/workbench.html)** ·
+**→ [Start the lab](https://securityaudit.borck.education/)** ·
+**[Open the Audit Workbench](https://securityaudit.borck.education/workbench.html)** ·
 **[Engagement guide](LAB-GUIDE.md)**
 
 ## Not a Docker lab

@@ -1,6 +1,6 @@
 # Security Audit Lab — Engagement Guide
 
-> Part of the **[Assume-Breach series](https://michael-borck.github.io/security-labs/)** — the
+> Part of the **[Assume-Breach series](https://security.borck.education/)** — the
 > govern/assure end of the arc. Companion to the book
 > **[*Substantiate, Don't Assume*](https://michael-borck.github.io/substantiate-dont-assume/)**.
 
@@ -20,7 +20,7 @@ This lab is not a Docker lab. Its two moving parts are both on the web:
   [Statement of Applicability](https://tessera.locoensayo.org/docs/support/statement_of_applicability.html),
   evidence logs, and a dozen [staff you can interview](https://tessera.locoensayo.org/chatbots/) (AI
   chatbots who answer as their character, redirect you to the right person, and won't do your analysis for you).
-- **The [Audit Workbench](https://michael-borck.github.io/security-audit-lab/workbench.html)** — your
+- **The [Audit Workbench](https://securityaudit.borck.education/workbench.html)** — your
   workspace for planning, scoping, recording evidence, and building the report.
 
 ## How the engagement runs
